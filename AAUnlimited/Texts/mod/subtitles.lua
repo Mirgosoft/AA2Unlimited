@@ -1,4 +1,4 @@
---@INFO Subtitles loader
+--@INFO Shows game subtitles
 
 local _M = {}
 local opts = {
@@ -18,8 +18,8 @@ local opts = {
 	{ "outlineColorA", 255, "Outline Alpha: %i[0,255]"},
 	
 	{ "textAlign", 0, "Text Alignment: %l|Left|Center|{(if `Center`, param `Position X` not working)}"},
-	{ "areaPosX", 15, "Subs Position X, px: %i[0,3000]{not works, if param `Alignment` set to `Center`}"},
-	{ "areaPosY", 45, "Subs Position Y, px: %i[0,3000]"},
+	{ "areaPosX", 1.0, "Subs Position X, percents: %r[0,100,0.1]{Percent of Game window Width (not works, if param `Alignment` set to `Center`)}"},
+	{ "areaPosY", 5.0, "Subs Position Y, percents: %r[0,100,0.1]{Percent of Game window Height}"},
 }
 
 local subtitles = {}
@@ -27,7 +27,7 @@ local subtitles = {}
 local function reload_subtitles()
 	local dialogue
 	local count = 0
-	local subtitles_path = aau_path("subtitles.txt")
+	local subtitles_path = aau_path("configs", "subtitles.txt")
 	local file = io.open(subtitles_path, "r")
 	if not file then return end
 	for line in file:lines() do
@@ -49,7 +49,7 @@ function on.launch()
 	InitSubtitlesParams(opts.fontFam, opts.fontSize, opts.lineHeight, opts.duration, opts.maxLines,
 		opts.textColFemale, opts.diffColForM, opts.textColMale, 
 		opts.outlineQuality, opts.outlineSpread, opts.outlineColor, opts.outlineColorA,
-		opts.textAlign, opts.areaPosX, opts.areaPosY)
+		opts.textAlign, math.ceil(opts.areaPosX * 100), math.ceil(opts.areaPosY * 100))
 end
 
 function _M:load()

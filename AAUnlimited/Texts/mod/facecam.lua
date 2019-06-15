@@ -1,8 +1,5 @@
 --@INFO POV facecam (camera tracks eye bones)
 
--- Problems to fix: 
--- 1) In `cumshot` part need restore_camera()  (non POV mode)
--- (Currently, is no way to track this `start_cumshot` events.)
 
 local c = require "const"
 local _M = {}
@@ -46,16 +43,19 @@ local xyz
 local normalCamera = {rotx=0,roty=0,rotz=0,rotdist=0,fov=0.5}
 local facecamFOV = 0.9
 local prevPosId = 0
+local backupGameCenterParamVal = 0x99
+local deactivatedByCumshot = false
+local hCam = nil
 
 local function fetch_rot()
 	if not hinfo then return end
 	-- must be in facecam mode to fetch something meaningful!
 	if current == nil then return end
 	--log.info("-LUA-fetch_rot")
-	local cam = hinfo:GetCamera()
-	xyz.xrot = cam.m_xRotRad
-	xyz.yrot = cam.m_yRotRad
-	xyz.zrot = cam.m_zRotRad
+	hCam = hinfo:GetCamera()
+	xyz.xrot = hCam.m_xRotRad
+	xyz.yrot = hCam.m_yRotRad
+	xyz.zrot = hCam.m_zRotRad
 end
 
 local function load_hpos_settings()
@@ -73,23 +73,23 @@ end
 local function update_eye()
 	--log.info("-LUA-update_eye")
 	SetFocusBone(eye, xyz.x + center.x, xyz.y + center.y, xyz.z + center.z, mcfg.zunlock)
-	local cam = hinfo:GetCamera()
-	cam.m_xRotRad = xyz.xrot
-	cam.m_yRotRad = xyz.yrot
-	cam.m_zRotRad = xyz.zrot
+	hCam = hinfo:GetCamera()
+	hCam.m_xRotRad = xyz.xrot
+	hCam.m_yRotRad = xyz.yrot
+	hCam.m_zRotRad = xyz.zrot
 end
 
 local function restore_camera()
 	--log.info("-LUA-restore_camera")
 	SetFocusBone(nil)	
-	local cam = hinfo:GetCamera()
+	hCam = hinfo:GetCamera()
 	for i,v in ipairs {1.0,0,0,0,0,1.0,0,0,0,0,1.0,0,0,0,0,1.0} do
-		cam:m_matrix(i-1, v)
+		hCam:m_matrix(i-1, v)
 	end
-	cam.m_xRotRad = normalCamera.rotx -- restore also Camera FOV, Rotatings and Distance
-	cam.m_yRotRad = normalCamera.roty
-	cam.m_zRotRad = normalCamera.rotz
-	cam.m_distToMid = normalCamera.rotdist
+	hCam.m_xRotRad = normalCamera.rotx -- restore also Camera FOV, Rotatings and Distance
+	hCam.m_yRotRad = normalCamera.roty
+	hCam.m_zRotRad = normalCamera.rotz
+	hCam.m_distToMid = normalCamera.rotdist
 	set_FOV(normalCamera.fov)
 end
 
@@ -156,10 +156,19 @@ local function set_status(current)
 		hide_heda(true,false)
 		hide_heda(false,false)
 		set_eye_focus(nil)
+		if backupGameCenterParamVal ~= 0x99 then	-- restore also 'Center H-scene' game param
+			poke_walk(GameBase + 0x376164, backupGameCenterParamVal, 0x34, 0x14, 0x38, 0x2D8)
+			backupGameCenterParamVal = 0x99
+		end
 	else
 		hide_heda(not current, false)
 		hide_heda(current, true)
 		set_eye_focus(current)
+		-- Temporary Turn off 'Center H-scene' game param (Prevent random rotating camera by the game)
+		if backupGameCenterParamVal == 0x99 then
+			backupGameCenterParamVal = peek_walk(GameBase + 0x376164, 0x34, 0x14, 0x38, 0x2D8)
+		end
+		poke_walk(GameBase + 0x376164, 0x0, 0x34, 0x14, 0x38, 0x2D8)
 	end
 end
 
@@ -167,26 +176,70 @@ function set_FOV(value) -- from 0.1 to 1.5
 	g_poke(0x3A8574, string.pack("<f", value))
 end
 
+local function increaseFOV(value)
+	if (not hinfo) then return end
+	if current ~= nil and (facecamFOV + value) <= 1.5 then
+		set_FOV(facecamFOV + value)
+		facecamFOV = facecamFOV + value
+	elseif current == nil and (normalCamera.fov + value) <= 1.5 then
+		set_FOV(normalCamera.fov + value)
+		normalCamera.fov = normalCamera.fov + value
+	end
+end
+
+local function decreaseFOV(value)
+	if (not hinfo) then return end
+	if current ~= nil and (facecamFOV - value) >= 0.1 then
+		set_FOV(facecamFOV - value)
+		facecamFOV = facecamFOV - value
+	elseif current == nil and (normalCamera.fov - value) >= 0.1 then
+		set_FOV(normalCamera.fov - value)
+		normalCamera.fov = normalCamera.fov - value
+	end
+end
+
+local function activateFacecam(saveconfig)
+	if not hinfo then return end
+	fetch_rot()
+	if current == nil then -- On activate facecam
+		current = true
+		-- backup the Camera FOV, Rotatings and Distance and set the starting FOV
+		hCam = hinfo:GetCamera()
+		normalCamera.rotx = hCam.m_xRotRad
+		normalCamera.roty = hCam.m_yRotRad
+		normalCamera.rotz = hCam.m_zRotRad
+		normalCamera.rotdist = hCam.m_distToMid
+		set_FOV(facecamFOV)
+	else
+		current = not current
+	end
+	if saveconfig then
+		Config.save()
+		load_hpos_settings()
+		set_status(current)
+	end
+end
+
+local function deactivateFacecam(saveconfig)
+	if (not hinfo) then return end
+	if (current == nil) then return end
+	fetch_rot()
+	current = nil
+	if saveconfig then
+		Config.save()
+		load_hpos_settings()
+		set_status(current)
+	end
+end
+
 function on.char(k)
 	if not hinfo then return k end
+	if k > 255 then return k end
 	local chr = string.char(k)
 	if chr == mcfg.activate then
-		fetch_rot()
-		if current == nil then -- On activate facecam
-			current = true
-			-- backup the Camera FOV, Rotatings and Distance and set the starting FOV
-			local cam = hinfo:GetCamera()
-			normalCamera.rotx=cam.m_xRotRad
-			normalCamera.roty=cam.m_yRotRad
-			normalCamera.rotz=cam.m_zRotRad
-			normalCamera.rotdist=cam.m_distToMid
-			set_FOV(facecamFOV)
-		else
-			current = not current
-		end
+		activateFacecam(false)
 	elseif mcfg.reset:find(chr,1,true) and current ~= nil then
-		fetch_rot()
-		current = nil
+		deactivateFacecam(false)
 	else
 		return k
 	end
@@ -197,25 +250,26 @@ function on.char(k)
 	return k
 end
 
+local function centerView()
+	if (not hinfo) then return end
+	if (current == nil) then return end
+	xyz.x = 0
+	xyz.y = 0
+	xyz.z = 0
+	xyz.xrot = 0
+	xyz.yrot = math.pi
+	xyz.zrot = 0
+	-- note, no fetch_rot coz we force 0
+	update_eye()
+end
+
 function on.keydown(k)
 	if (not hinfo) then return k end
 	if k == IncrFOV then
-		if current ~= nil and facecamFOV <= 1.45 then
-			set_FOV(facecamFOV + 0.05)
-			facecamFOV = facecamFOV + 0.05
-		elseif current == nil and normalCamera.fov <= 1.45 then
-			set_FOV(normalCamera.fov + 0.05)
-			normalCamera.fov = normalCamera.fov + 0.05
-		end
+		increaseFOV(0.05)
 		return k
 	elseif k == DecrFOV then
-		if current ~= nil and facecamFOV >= 0.15 then 
-			set_FOV(facecamFOV - 0.05)
-			facecamFOV = facecamFOV - 0.05
-		elseif current == nil and normalCamera.fov >= 0.15 then 
-			set_FOV(normalCamera.fov - 0.05)
-			normalCamera.fov = normalCamera.fov - 0.05
-		end
+		decreaseFOV(0.05)
 		return k
 	end
 	
@@ -238,14 +292,7 @@ function on.keydown(k)
 		xyz.z = xyz.z + step
 
 	elseif k == SEVEN then
-		xyz.x = 0
-		xyz.y = 0
-		xyz.z = 0
-		xyz.xrot = 0
-		xyz.yrot = math.pi
-		xyz.zrot = 0
-		-- note, no fetch_rot coz we force 0
-		update_eye()
+		centerView()
 		return k
 	elseif k == NINE then
 		xyz.tong = xyz.tong == 2 and 0 or 2
@@ -268,6 +315,25 @@ end
 function on.change_h(hi, currpos, active, passive, aface, pface)
 	Config.save()
 	after_change_h()
+end
+
+function on.start_h_cumshot(hi)
+	if current ~= nil then
+		deactivatedByCumshot = true
+		SimKeyPress(0x11) -- Press W key
+		deactivateFacecam(true) -- Verify reset status (if key W not reset)
+		hCam = hinfo:GetCamera() -- Fix camera Pitch bad values
+		if hCam.m_xRotRad > 0 and hCam.m_xRotRad < 5 then
+			hCam.m_xRotRad = 6
+		end
+	end
+end
+
+function on.end_h_cumshot(hi)
+	if deactivatedByCumshot and current == nil then
+		deactivatedByCumshot = false
+		activateFacecam(true)
+	end
 end
 
 function on.start_h(hi)
@@ -298,9 +364,9 @@ local function kill_h()
 	if not hinfo then return end
 	fetch_rot()
 	Config.save()
+	current = nil
 	set_status(nil)
 	hinfo = false
-	current = nil
 end
 
 function on.end_h()
@@ -309,6 +375,16 @@ end
 
 function on.convo()
 	kill_h()
+end
+
+function on.convo_state_update()
+	-- Restore camera position & rotation, if someone else interrupted the H-scene
+	if hCam ~= nil then
+		for i,v in ipairs {1.0,0,0,0,0,1.0,0,0,0,0,1.0,0,0,0,0,1.0} do
+			hCam:m_matrix(i-1, v)
+		end
+		hCam = nil
+	end
 end
 
 local function on_hposchange(arg)
@@ -330,6 +406,23 @@ local function on_hposchange2(arg, ret)
 	--log.info("-LUA-H pos id")
 	--log.info(arg)
 	return ret
+end
+
+-- Radial Menu events
+function on.facecam_fov_plus()
+	increaseFOV(0.1)
+end
+function on.facecam_fov_minus()
+	decreaseFOV(0.1)
+end
+function on.facecam_activate()
+	activateFacecam(true)
+end
+function on.facecam_deactivate()
+	deactivateFacecam(true)
+end
+function on.facecam_center_view()
+	centerView()
 end
 
 local orig_hook
