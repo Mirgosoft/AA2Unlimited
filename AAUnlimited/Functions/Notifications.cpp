@@ -35,7 +35,10 @@ namespace Notifications {
 	bool separateColorType = true;
 
 	void AddNotification(const char *text, int type_id) {
-		if (!enabled) return;
+		if (!enabled) {
+			LOGPRIO(Logger::Priority::INFO) << text << "\r\n";
+			return;
+		}
 		if (type_id != 1) { type_id = 2; } // 1 - normal notify | 2 - important
 
 		if (lastPopTime == 0)
