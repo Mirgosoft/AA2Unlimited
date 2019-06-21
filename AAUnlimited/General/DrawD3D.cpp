@@ -531,7 +531,8 @@ namespace DrawD3D {
 		
 
 		// Fonts Render
-		// ...
+		Subtitles::Render();
+		Notifications::Render();
 
 
 		// Render HUD Shapes and text over them

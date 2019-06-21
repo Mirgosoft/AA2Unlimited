@@ -1497,19 +1497,10 @@ namespace Shared {
 		}
 
 		// string text, bool important
-		void Thread::DisplayNotification(std::vector<Value>& params) {
+		void Thread::Notification(std::vector<Value>& params) {
 			auto text = params[0].strVal;
-			int important = params[1].bVal ? 2 : 1;
-
-			int neededSize = WideCharToMultiByte(CP_UTF8, 0,	// Wstr to str
-				&text->c_str()[0], (int)text->size(), NULL, 0, NULL, NULL);
-			std::string strUTF8(neededSize, '\0');
-			WideCharToMultiByte(CP_UTF8, 0, &text->c_str()[0], (int)text->size(), 
-				&strUTF8[0], neededSize, NULL, NULL);
-			char *text_char = new char[strUTF8.size() + 1];		// From string to char
-			strUTF8.copy(text_char, strUTF8.size() + 1);
-			text_char[strUTF8.size()] = '\0';
-			Notifications::AddNotification(text_char, important);
+			NotifyType important = params[1].bVal ? ImportantNotification : RegularNotification;
+			Notifications::AddNotification(*text, important);
 		}
 
 		/*
@@ -2203,11 +2194,11 @@ namespace Shared {
 				&Thread::SetPeriodTimer
 			},
 			{
-				106, ACTIONCAT_GENERAL, TEXT("Display Notification"), TEXT("Notification (text: %p , importantBool: %p )"),
+				108, ACTIONCAT_GENERAL, TEXT("Notification"), TEXT("Notification (text: %p , importantBool: %p )"),
 				TEXT("Display the notification on the screen."),
 				{ TYPE_STRING, TYPE_BOOL },
-				&Thread::DisplayNotification
-			},
+				&Thread::Notification
+			}
 		};
 
 

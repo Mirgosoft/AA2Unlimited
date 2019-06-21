@@ -154,7 +154,7 @@ namespace Shared {
 			void Set_H_AI_LOCK(std::vector<Value>& params);
 			void AddMood(std::vector<Value>& params);
 			void ReplaceMood(std::vector<Value>& params);
-			void DisplayNotification(std::vector<Value>& params);
+			void Notification(std::vector<Value>& params);
 
 			//event response
 			void SetNpcResponseSuccess(std::vector<Value>& params);

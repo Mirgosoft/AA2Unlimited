@@ -561,9 +561,7 @@ public:;
 				if (vp.Width > 1024) 
 					DrawFPS();
 			}
-			Subtitles::Render();
-			Notifications::Render();
-			DrawD3D::Render(); // HUD and others
+			DrawD3D::Render();
 		}
 		frameno++;
 
