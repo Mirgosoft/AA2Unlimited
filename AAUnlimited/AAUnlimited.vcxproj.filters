@@ -131,6 +131,11 @@
     <ClCompile Include="External\ExternalClasses\Light.cpp" />
     <ClCompile Include="Functions\AAPlay\Subs.cpp" />
     <ClCompile Include="MemMods\AAPlay\Events\CharacterRender.cpp" />
+    <ClCompile Include="Functions\Notifications.cpp" />
+    <ClCompile Include="Functions\AAPlay\ClimaxButton.cpp" />
+    <ClCompile Include="Functions\AAPlay\Controls.cpp" />
+    <ClCompile Include="Functions\AAPlay\RadialMenu.cpp" />
+    <ClCompile Include="General\DrawD3D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Files\Config.h" />
@@ -253,6 +258,11 @@
     <ClInclude Include="External\ExternalClasses\ActionParamStruct.h" />
     <ClInclude Include="Functions\AAPlay\Subs.h" />
     <ClInclude Include="MemMods\AAPlay\Events\CharacterRender.h" />
+    <ClInclude Include="Functions\Notifications.h" />
+    <ClInclude Include="Functions\AAPlay\ClimaxButton.h" />
+    <ClInclude Include="Functions\AAPlay\Controls.h" />
+    <ClInclude Include="Functions\AAPlay\RadialMenu.h" />
+    <ClInclude Include="General\DrawD3D.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AAUnlimitedDll.rc">

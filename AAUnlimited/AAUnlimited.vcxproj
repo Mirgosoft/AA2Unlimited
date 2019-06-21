@@ -40,10 +40,13 @@
     <ClCompile Include="Files\PP2.cpp" />
     <ClCompile Include="Files\PPeX.cpp" />
     <ClCompile Include="Files\XXFile.cpp" />
+    <ClCompile Include="Functions\AAPlay\ClimaxButton.cpp" />
+    <ClCompile Include="Functions\AAPlay\Controls.cpp" />
     <ClCompile Include="Functions\AAPlay\GameState.cpp" />
     <ClCompile Include="Functions\AAEdit\UnlimitedDialogParts\Triggers.cpp" />
     <ClCompile Include="Functions\AAPlay\Poser.cpp" />
     <ClCompile Include="Functions\AAPlay\PoserController.cpp" />
+    <ClCompile Include="Functions\AAPlay\RadialMenu.cpp" />
     <ClCompile Include="Functions\AAPlay\Subs.cpp" />
     <ClCompile Include="Functions\CharInstData.cpp" />
     <ClCompile Include="External\ExternalClasses\Frame.cpp" />
@@ -54,6 +57,7 @@
     <ClCompile Include="Functions\AAPlay\HAis\BaseAi.cpp" />
     <ClCompile Include="External\ExternalClasses\HClasses\HPosData.cpp" />
     <ClCompile Include="Functions\AAPlay\HButtonMove.cpp" />
+    <ClCompile Include="Functions\Notifications.cpp" />
     <ClCompile Include="Functions\Render.cpp" />
     <ClCompile Include="Functions\RenderWrap.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -75,6 +79,7 @@
     <ClCompile Include="Functions\Shared\Triggers\Triggers.cpp" />
     <ClCompile Include="Functions\Shared\Triggers\Value.cpp" />
     <ClCompile Include="Functions\XXObjectFile.cpp" />
+    <ClCompile Include="General\DrawD3D.cpp" />
     <ClCompile Include="General\IllusionUtil.cpp" />
     <ClCompile Include="Hooks\WinAPI.cpp" />
     <ClCompile Include="MemMods\AAPlay\Events\CharacterActions.cpp" />
@@ -158,9 +163,12 @@
     <ClInclude Include="Files\PP2.h" />
     <ClInclude Include="Files\PPeX.h" />
     <ClInclude Include="Files\XXFile.h" />
+    <ClInclude Include="Functions\AAPlay\ClimaxButton.h" />
+    <ClInclude Include="Functions\AAPlay\Controls.h" />
     <ClInclude Include="Functions\AAPlay\GameState.h" />
     <ClInclude Include="Functions\AAEdit\UnlimitedDialogParts\Triggers.h" />
     <ClInclude Include="Functions\AAPlay\Poser.h" />
+    <ClInclude Include="Functions\AAPlay\RadialMenu.h" />
     <ClInclude Include="Functions\AAPlay\Subs.h" />
     <ClInclude Include="Functions\CharInstData.h" />
     <ClInclude Include="External\ExternalClasses\Frame.h" />
@@ -173,6 +181,7 @@
     <ClInclude Include="Functions\AAPlay\HAis\BaseAi.h" />
     <ClInclude Include="External\ExternalClasses\HClasses\HPosData.h" />
     <ClInclude Include="Functions\AAPlay\HButtonMove.h" />
+    <ClInclude Include="Functions\Notifications.h" />
     <ClInclude Include="Functions\Render.h" />
     <ClInclude Include="Functions\RenderWrap.h" />
     <ClInclude Include="Functions\Serialize.h" />
@@ -191,6 +200,7 @@
     <ClInclude Include="Functions\Shared\Triggers\Value.h" />
     <ClInclude Include="Functions\XXObjectFile.h" />
     <ClInclude Include="General\DirectXStructs.h" />
+    <ClInclude Include="General\DrawD3D.h" />
     <ClInclude Include="General\IllusionUtil.h" />
     <ClInclude Include="Hooks\WinAPI.h" />
     <ClInclude Include="MemMods\AAPlay\Events\CharacterActions.h" />
@@ -364,7 +374,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AA2A22EF-17CB-4B53-B921-05C18036AD15}</ProjectGuid>
     <RootNamespace>AAUnlimited</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
     <ProjectName>AAUnlimitedDll</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -384,7 +394,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDebug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
