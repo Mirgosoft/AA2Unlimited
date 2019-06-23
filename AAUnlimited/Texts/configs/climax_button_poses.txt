@@ -1,3 +1,5 @@
+// Climax Button config 
+// (Configured for the More Cumming Positions v262)
 // 
 // ------------- READ before making changes ---------------------
 // Pose redirection by default is based on their categories (id_category):
@@ -41,7 +43,6 @@
 //
 // 5) Verify attaching status between normal and climax poses.
 // For this Set `VerifyRegister` param from `true` to `false` value.
-// This no more forces to play Registered current pose again.
 // After that, start the H-scene, select poses one by one and click 'Start Climax'
 // In this cases, every current position must redirecting to his climax version.
 // If you have noticed Shifts, these Shifts can be caused by 2 factors:
@@ -67,17 +68,78 @@ Debug=false
 VerifyRegister=false
 
 // Fix register poses id
-[FIX_HETERO]	72
-//[FIX_HOMO] 	51
+//[FIX_HETERO]	33
+//[FIX_HOMO]	180
+
 
 // Hetero and homo link fixes START ----------------------
 // (order this lines is important!)
 
-[HETERO_LINK] 	{3, 16} => {7, 16} {7, 17} {}
-[HETERO_SHIFT]	+1
+[HETERO_LINK] 	{1, 13} => {6, 11} {} {}
+[HETERO_LINK] 	{1, 14} => {6, 2} {} {}
+[HETERO_LINK] 	{1, 15} => {6, 17} {} {}
+[HETERO_LINK] 	{3, 0} => {7, 6} {} {}
+[HETERO_SHIFT]	+6
 
+// {3, 1} => {7, 7} ... {3, 3} => {7, 9}
+
+[HETERO_LINK] 	{3, 4} => {7, 0} {} {}
+[HETERO_SHIFT]	-1
+
+// {3, 5} => {7, 10} ... {3, 15} => {7, 20}
+
+[HETERO_LINK] 	{3, 16} => {7, 3} {} {}
+[HETERO_LINK] 	{3, 17} => {7, 5} {} {}
+[HETERO_LINK] 	{3, 18} => {7, 2} {} {}
+[HETERO_LINK] 	{4, 0} => {8, 3} {} {}
+[HETERO_SHIFT]	+3
+
+// {4, 1} => {8, 4} ... {4, 3} => {8, 6}
+
+[HETERO_LINK] 	{4, 4} => {8, 1} {} {}
+[HETERO_SHIFT]	-1
+
+// {4, 5} => {8, 7} ... {4, 7} => {8, 9}
+
+[HETERO_LINK] 	{4, 8} => {8, 3} {} {}
+[HETERO_LINK] 	{4, 9} => {8, 2} {} {}
+[HETERO_LINK] 	{4, 10} => {8, 6} {} {}
+[HETERO_LINK] 	{4, 11} => {8, 3} {} {}
+
+
+[HOMO_LINK] 	{3, 0} => {7, 5} {} {}
+[HOMO_SHIFT]	+5
+
+// {3, 1} => {7, 6} ... {3, 3} => {7, 8}
+
+[HOMO_LINK] 	{3, 4} => {7, 11} {} {}
+[HOMO_SHIFT]	-1
+
+// {3, 5} => {7, 9} ... {3, 15} => {7, 19}
+
+[HOMO_LINK] 	{3, 16} => {7, 2} {} {}
+[HOMO_LINK] 	{3, 17} => {7, 4} {} {}
+[HOMO_LINK] 	{3, 18} => {7, 1} {} {}
+[HOMO_LINK] 	{4, 0} => {8, 3} {} {}
+[HOMO_SHIFT]	+3
+
+// {4, 1} => {8, 4} ... {4, 3} => {8, 6}
+
+[HOMO_LINK] 	{4, 4} => {8, 1} {} {}
+[HOMO_SHIFT]	-1
+
+// {4, 5} => {8, 7} ... {4, 6} => {8, 8}
+
+[HOMO_LINK] 	{4, 7} => {8, 7} {} {}
+[HOMO_LINK] 	{4, 8} => {8, 3} {} {}
+[HOMO_LINK] 	{4, 9} => {8, 2} {} {}
+[HOMO_LINK] 	{4, 10} => {8, 6} {} {}
+[HOMO_LINK] 	{4, 11} => {8, 3} {} {}
+
+// Example
+//[HETERO_LINK] 	{3, 16} => {7, 16} {7, 17} {}
+//[HETERO_SHIFT]	+1
 //[HOMO_LINK]		{2, 34} => {5, 22} {5, 23} {}
 //[HOMO_SHIFT]	-2
-//[HOMO_LINK]		{3, 21} => {6, 24} {} {}
 
 // Hetero and homo link fixes END -----------------------
