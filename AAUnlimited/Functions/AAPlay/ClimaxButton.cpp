@@ -192,6 +192,9 @@ namespace ClimaxButton {
 			return;
 		}
 
+		if (verifyRegister) // If need verify only registered status of current pose
+			return;
+
 		// Get Climax version
 		int climax_pose_node = 0;
 		if (hButtonToClimax[gender_i][hInfo->m_currPosition].climaxCount > 1) { // If need random pick climax pose
@@ -200,8 +203,6 @@ namespace ClimaxButton {
 		}
 
 		int climax_id = hButtonToClimax[gender_i][hInfo->m_currPosition].climaxPoses[climax_pose_node];
-		if (verifyRegister) // If need verify only registered status of current pose
-			climax_id = hInfo->m_currPosition;
 		if (climax_id == -1) {
 			LOGPRIO(Logger::Priority::WARN) << "[ClimaxBtn] Current pose haven't climax version\r\n"; 
 			return;
@@ -245,6 +246,9 @@ namespace ClimaxButton {
 			return;
 		}
 
+		if (verifyRegister) // If need verify only registered status of current pose
+			return;
+
 		// Get Normal version
 		int normal_pose_node = 0;
 		if (hButtonToNormal[gender_i][hInfo->m_currPosition].normalCount > 1) { // If need random pick normal pose
@@ -253,8 +257,6 @@ namespace ClimaxButton {
 		}
 
 		int normal_id = hButtonToNormal[gender_i][hInfo->m_currPosition].normalPoses[normal_pose_node];
-		if (verifyRegister) // If need verify only registered status of current pose
-			normal_id = hInfo->m_currPosition;
 		if (normal_id == -1) {
 			LOGPRIO(Logger::Priority::WARN) << "[ClimaxBtn] Current pose haven't Normal version\r\n";
 			return;

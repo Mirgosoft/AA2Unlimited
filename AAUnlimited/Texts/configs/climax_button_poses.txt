@@ -30,9 +30,9 @@
 // 
 // 3) Fix poses, that are not registered.
 // For this at start Set `VerifyRegister` param from `false` to `true` value
-// This forces to play Registered current pose again when pressed 'Start Climax' (for better visual debugging).
+// This forces only show info about pose, when pressed 'Start Climax' (for better visual debugging).
 // After that, start the H-scene, select poses one by one and click 'Start Climax'
-// In this cases, every current position must restarting. If this does not happen,
+// If you see in the log after Current pose id the message 'Current pose is unregistered',
 // then the pose must be registered manually in this config in 'Fix register poses id' section.
 // Use, for example `[FIX_HETERO] 15` - for the fix Hetero pose 
 // with id 15 (see your id in logs `Current pose id: ...` after pressing 'Start Climax').
