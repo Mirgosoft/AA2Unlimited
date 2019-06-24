@@ -285,6 +285,11 @@ namespace ClimaxButton {
 
 		// Get the config file for current poses pack
 		std::ifstream infile(General::AAUPath + L"configs\\climax_button_poses.txt");
+		if (!infile) {
+			LOGPRIO(Logger::Priority::WARN) << "[ClimaxBtn] Can't open the AAUnlimited/configs/climax_button_poses.txt file\r\n";
+			return;
+		}
+
 		std::string line;
 		while (std::getline(infile, line))
 		{
