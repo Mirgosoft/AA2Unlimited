@@ -17,6 +17,23 @@ end
 -- Legs
 -- ####
 
+local legsdata = { -- legsdata[gender-id][index-of-legs-wear 1..n] == {socks-id 0..5 , shoes-id 0..4}
+	{	-- male
+		{1, 0}, {1, 2}, {1, 1}, {1, 3}, 
+		{0, 2}, {0, 1}, {0, 3}, {0, 0}
+	},
+	{	-- female
+		{1, 0}, {2, 0}, {4, 0}, {3, 0}, {5, 0},
+		{1, 1}, {1, 2}, {1, 3}, 
+		{2, 1}, {2, 2}, {2, 3}, 
+		{4, 1}, {4, 2}, {4, 3}, 
+		{3, 1}, {3, 2}, {3, 3}, 
+		{5, 1}, {5, 2}, {5, 3}, {5, 4}, 
+		{0, 0}, {0, 1}, {0, 2}, {0, 3}, 
+		{0, 0}, {0, 0}, {0, 0}, {0, 0}
+	}
+}
+
 local legslist = iup.list {
 	expand = "yes",
 	visiblelines = 8,
@@ -49,6 +66,19 @@ local selectlegs = function(index)
 	end
 	if not char.struct.m_xxLegs then
 		return
+	end
+	if GetIsClothesScreen() then -- if AAPlay Clothing Editor
+		char.struct.m_charData:m_clothes(char.struct.m_currClothes).socks = legsdata[char.struct.m_charData.m_gender+1][index][1]
+		if peek_walk(GameBase + 0x3761D0, 0x40, 0xC08) ~= 9 then
+			char.struct.m_charData:m_clothes(char.struct.m_currClothes).indoorShoes = legsdata[char.struct.m_charData.m_gender+1][index][2]
+		else
+			char.struct.m_charData:m_clothes(char.struct.m_currClothes).outdoorShoes = legsdata[char.struct.m_charData.m_gender+1][index][2]
+		end
+		-- Update the current clothing visual
+		local character = charamgr.current
+		if character then
+			character:update(1)
+		end
 	end
 	local legsbaseframe = char.struct.m_xxLegs:FindBone("A00_null_kutu") or char.struct.m_xxLegs:FindBone("S00_null_kutu")
 	local legcount = legsbaseframe.m_nChildren
