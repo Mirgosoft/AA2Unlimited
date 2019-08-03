@@ -17,19 +17,19 @@ end
 -- Legs
 -- ####
 
-local legsdata = { -- legsdata[gender-id][index-of-legs-wear 1..n] == {socks-id 0..5 , shoes-id 0..4}
+local legsdata = { -- legsdata[gender-id][legs-wear-title 1..n] == {socks-id 0..5 , shoes-id 0..4}
 	{	-- male
-		{1, 0}, {1, 2}, {1, 1}, {1, 3}, 
-		{0, 2}, {0, 1}, {0, 3}, {0, 0}
+		["S00_null_kutusita"] = {1, 0}, ["S00_null_kawa"] = {1, 2}, ["S00_null_uwabaki"] = {1, 1}, ["S00_null_shoes"] = {1, 3}, 
+		["S00_null_AK"] = {0, 2}, ["S00_null_AU"] = {0, 1}, ["S00_null_AS"] = {0, 3}, ["S00_null_asi"] = {0, 0}
 	},
 	{	-- female
-		{1, 0}, {2, 0}, {4, 0}, {3, 0}, {5, 0},
-		{1, 1}, {1, 2}, {1, 3}, 
-		{2, 1}, {2, 2}, {2, 3}, 
-		{4, 1}, {4, 2}, {4, 3}, 
-		{3, 1}, {3, 2}, {3, 3}, 
-		{5, 1}, {5, 2}, {5, 4}, {5, 3}, 
-		{0, 0}, {0, 1}, {0, 2}, {0, 3}, 
+		["A00_null_KO"] = {1, 0}, ["A00_null_KH"] = {2, 0}, ["A00_null_KC"] = {4, 0}, ["A00_null_KR"] = {3, 0}, ["A00_null_KP"] = {5, 0},
+		["A00_null_KOU"] = {1, 1}, ["A00_null_KOK"] = {1, 2}, ["A00_null_KOS"] = {1, 3}, 
+		["A00_null_KHU"] = {2, 1}, ["A00_null_KHK"] = {2, 2}, ["A00_null_KHS"] = {2, 3}, 
+		["A00_null_KCU"] = {4, 1}, ["A00_null_KCK"] = {4, 2}, ["A00_null_KCS"] = {4, 3}, 
+		["A00_null_KRU"] = {3, 1}, ["A00_null_KRK"] = {3, 2}, ["A00_null_KRS"] = {3, 3}, 
+		["A00_null_KPU"] = {5, 1}, ["A00_null_KPK"] = {5, 2}, ["A00_null_KPS"] = {5, 3},  ["A00_null_KPP"] = {5, 4},
+		["A00_null_asi"] = {0, 0}, ["A00_null_AU"] = {0, 1}, ["A00_null_AK"] = {0, 2}, ["A00_null_AS"] = {0, 3}, 
 		{0, 0}, {0, 0}, {0, 0}, {0, 0}
 	}
 }
@@ -59,7 +59,7 @@ local populatelegs = function()
 end
 charamgr.currentcharacterchanged.connect(populatelegs)
 
-local selectlegs = function(index)
+local selectlegs = function(index, legstitle)
 	local char = charamgr.currentcharacter()
 	if not char then
 		return
@@ -68,11 +68,12 @@ local selectlegs = function(index)
 		return
 	end
 	if GetIsClothesScreen() then -- if AAPlay Clothing Editor
-		char.struct.m_charData:m_clothes(char.struct.m_currClothes).socks = legsdata[char.struct.m_charData.m_gender+1][index][1]
+		if not legsdata[char.struct.m_charData.m_gender+1][legstitle] then return end
+		char.struct.m_charData:m_clothes(char.struct.m_currClothes).socks = legsdata[char.struct.m_charData.m_gender+1][legstitle][1]
 		if peek_walk(GameBase + 0x3761D0, 0x40, 0xC08) ~= 9 then
-			char.struct.m_charData:m_clothes(char.struct.m_currClothes).indoorShoes = legsdata[char.struct.m_charData.m_gender+1][index][2]
+			char.struct.m_charData:m_clothes(char.struct.m_currClothes).indoorShoes = legsdata[char.struct.m_charData.m_gender+1][legstitle][2]
 		else
-			char.struct.m_charData:m_clothes(char.struct.m_currClothes).outdoorShoes = legsdata[char.struct.m_charData.m_gender+1][index][2]
+			char.struct.m_charData:m_clothes(char.struct.m_currClothes).outdoorShoes = legsdata[char.struct.m_charData.m_gender+1][legstitle][2]
 		end
 		-- Update the current clothing visual
 		local character = charamgr.current
@@ -95,7 +96,7 @@ end
 
 legslist.action = function(self, text, item, state)
 	if state == 1 then
-		selectlegs(item)
+		selectlegs(item, text)
 	end
 end
 
