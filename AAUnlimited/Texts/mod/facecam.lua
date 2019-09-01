@@ -1,8 +1,5 @@
 --@INFO POV facecam (camera tracks eye bones)
 
--- Problems to fix: 
--- 1) In `cumshot` part need restore_camera()  (non POV mode)
--- (Currently, is no way to track this `start_cumshot` events.)
 
 local c = require "const"
 local _M = {}
@@ -46,16 +43,19 @@ local xyz
 local normalCamera = {rotx=0,roty=0,rotz=0,rotdist=0,fov=0.5}
 local facecamFOV = 0.9
 local prevPosId = 0
+local backupGameCenterParamVal = 0x99
+local deactivatedByCumshot = false
+local hCam = nil
 
 local function fetch_rot()
 	if not hinfo then return end
 	-- must be in facecam mode to fetch something meaningful!
 	if current == nil then return end
 	--log.info("-LUA-fetch_rot")
-	local cam = hinfo:GetCamera()
-	xyz.xrot = cam.m_xRotRad
-	xyz.yrot = cam.m_yRotRad
-	xyz.zrot = cam.m_zRotRad
+	hCam = hinfo:GetCamera()
+	xyz.xrot = hCam.m_xRotRad
+	xyz.yrot = hCam.m_yRotRad
+	xyz.zrot = hCam.m_zRotRad
 end
 
 local function load_hpos_settings()
@@ -73,23 +73,23 @@ end
 local function update_eye()
 	--log.info("-LUA-update_eye")
 	SetFocusBone(eye, xyz.x + center.x, xyz.y + center.y, xyz.z + center.z, mcfg.zunlock)
-	local cam = hinfo:GetCamera()
-	cam.m_xRotRad = xyz.xrot
-	cam.m_yRotRad = xyz.yrot
-	cam.m_zRotRad = xyz.zrot
+	hCam = hinfo:GetCamera()
+	hCam.m_xRotRad = xyz.xrot
+	hCam.m_yRotRad = xyz.yrot
+	hCam.m_zRotRad = xyz.zrot
 end
 
 local function restore_camera()
 	--log.info("-LUA-restore_camera")
 	SetFocusBone(nil)	
-	local cam = hinfo:GetCamera()
+	hCam = hinfo:GetCamera()
 	for i,v in ipairs {1.0,0,0,0,0,1.0,0,0,0,0,1.0,0,0,0,0,1.0} do
-		cam:m_matrix(i-1, v)
+		hCam:m_matrix(i-1, v)
 	end
-	cam.m_xRotRad = normalCamera.rotx -- restore also Camera FOV, Rotatings and Distance
-	cam.m_yRotRad = normalCamera.roty
-	cam.m_zRotRad = normalCamera.rotz
-	cam.m_distToMid = normalCamera.rotdist
+	hCam.m_xRotRad = normalCamera.rotx -- restore also Camera FOV, Rotatings and Distance
+	hCam.m_yRotRad = normalCamera.roty
+	hCam.m_zRotRad = normalCamera.rotz
+	hCam.m_distToMid = normalCamera.rotdist
 	set_FOV(normalCamera.fov)
 end
 
@@ -156,10 +156,19 @@ local function set_status(current)
 		hide_heda(true,false)
 		hide_heda(false,false)
 		set_eye_focus(nil)
+		if backupGameCenterParamVal ~= 0x99 then	-- restore also 'Center H-scene' game param
+			poke_walk(GameBase + 0x376164, backupGameCenterParamVal, 0x34, 0x14, 0x38, 0x2D8)
+			backupGameCenterParamVal = 0x99
+		end
 	else
 		hide_heda(not current, false)
 		hide_heda(current, true)
 		set_eye_focus(current)
+		-- Temporary Turn off 'Center H-scene' game param (Prevent random rotating camera by the game)
+		if backupGameCenterParamVal == 0x99 then
+			backupGameCenterParamVal = peek_walk(GameBase + 0x376164, 0x34, 0x14, 0x38, 0x2D8)
+		end
+		poke_walk(GameBase + 0x376164, 0x0, 0x34, 0x14, 0x38, 0x2D8)
 	end
 end
 
@@ -195,11 +204,11 @@ local function activateFacecam(saveconfig)
 	if current == nil then -- On activate facecam
 		current = true
 		-- backup the Camera FOV, Rotatings and Distance and set the starting FOV
-		local cam = hinfo:GetCamera()
-		normalCamera.rotx = cam.m_xRotRad
-		normalCamera.roty = cam.m_yRotRad
-		normalCamera.rotz = cam.m_zRotRad
-		normalCamera.rotdist = cam.m_distToMid
+		hCam = hinfo:GetCamera()
+		normalCamera.rotx = hCam.m_xRotRad
+		normalCamera.roty = hCam.m_yRotRad
+		normalCamera.rotz = hCam.m_zRotRad
+		normalCamera.rotdist = hCam.m_distToMid
 		set_FOV(facecamFOV)
 	else
 		current = not current
@@ -222,8 +231,10 @@ local function deactivateFacecam(saveconfig)
 		set_status(current)
 	end
 end
+
 function on.char(k)
 	if not hinfo then return k end
+	if k > 255 then return k end
 	local chr = string.char(k)
 	if chr == mcfg.activate then
 		activateFacecam(false)
@@ -251,6 +262,7 @@ local function centerView()
 	-- note, no fetch_rot coz we force 0
 	update_eye()
 end
+
 function on.keydown(k)
 	if (not hinfo) then return k end
 	if k == IncrFOV then
@@ -305,6 +317,25 @@ function on.change_h(hi, currpos, active, passive, aface, pface)
 	after_change_h()
 end
 
+function on.start_h_cumshot(hi)
+	if current ~= nil then
+		deactivatedByCumshot = true
+		SimKeyPress(0x11) 		-- Press W key
+		deactivateFacecam(true) -- Verify reset status (if key W not reset facecam mode)
+		hCam = hinfo:GetCamera() -- Fix camera Pitch bad values
+		if hCam.m_xRotRad > 0 and hCam.m_xRotRad < 5 then
+			hCam.m_xRotRad = 6
+		end
+	end
+end
+
+function on.end_h_cumshot(hi)
+	if deactivatedByCumshot and current == nil then
+		deactivatedByCumshot = false
+		activateFacecam(true)
+	end
+end
+
 function on.start_h(hi)
 	hinfo = hi
 	parts[1] = hinfo.m_activeParticipant.m_charPtr
@@ -333,9 +364,9 @@ local function kill_h()
 	if not hinfo then return end
 	fetch_rot()
 	Config.save()
+	current = nil
 	set_status(nil)
 	hinfo = false
-	current = nil
 end
 
 function on.end_h()
@@ -344,6 +375,16 @@ end
 
 function on.convo()
 	kill_h()
+end
+
+function on.convo_state_update()
+	-- Restore camera position & rotation, if someone else interrupted the H-scene
+	if hCam ~= nil then
+		for i,v in ipairs {1.0,0,0,0,0,1.0,0,0,0,0,1.0,0,0,0,0,1.0} do
+			hCam:m_matrix(i-1, v)
+		end
+		hCam = nil
+	end
 end
 
 local function on_hposchange(arg)
