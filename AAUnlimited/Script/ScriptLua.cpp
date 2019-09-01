@@ -377,7 +377,10 @@ void Lua::bindLua() {
 	_BINDING["GetGameHwnd"] = LUA_LAMBDA({
 		s.push((DWORD)(*GameTick::hwnd));
 	});
-
+	
+	_BINDING["GetIsClothesScreen"] = LUA_LAMBDA({
+		s.push((bool)(Shared::GameState::getIsClothesScreen()));
+	});
 
 	_BINDING["SwitchUI"] = LUA_LAMBDA({
 		s.push(PlayInjections::UIEvent::UiEventHook(s.get(1), s.get(2), s.get(3), s.get(4), s.get(5), s.get(6), s.get(7)));
